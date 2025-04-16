@@ -1,13 +1,11 @@
-import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import Chat from "./pages/Chat";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
-import Users from "./pages/Users";
-import Chat from "./pages/Chat";
-import SalesReport from "./pages/SalesReport";
 import Settings from "./pages/Settings";
+import Users from "./pages/Users";
 
 function App() {
 
@@ -22,7 +20,6 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/users" element={<Users />} />
             <Route path="/chat" element={<Chat />} />
-            <Route path="/sales" element={<SalesReport />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
