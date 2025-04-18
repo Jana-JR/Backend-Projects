@@ -10,28 +10,28 @@ export default function ChatPage() {
       sender: "John",
       message: "Hey, My product didnt arrive",
       time: "2 hours ago",
-      image: "/inbox1.jpg",
+      image: "https://smartcdn.gprod.postmedia.digital/healthing/wp-content/uploads/2021/02/GettyImages-1081891678-1-scaled.jpg?quality=90&strip=all&w=704&h=395",
     },
     {
       id: 2,
       sender: "Smith",
       message: "Received parcel is seal broken",
       time: "1 day ago",
-      image: "/inbox2.webp",
+      image: "https://smartcdn.gprod.postmedia.digital/healthing/wp-content/uploads/2021/02/GettyImages-1081891678-1-scaled.jpg?quality=90&strip=all&w=704&h=395",
     },
     {
       id: 3,
       sender: "Bob",
       message: "Shit Happens",
       time: "2 days ago",
-      image: "/inbox3.jpg",
+      image: "https://smartcdn.gprod.postmedia.digital/healthing/wp-content/uploads/2021/02/GettyImages-1081891678-1-scaled.jpg?quality=90&strip=all&w=704&h=395",
     },
     {
       id: 4,
       sender: "Tyler",
       message: "My account is not working",
       time: "3 days ago",
-      image: "/inbox4.webp",
+      image: "https://smartcdn.gprod.postmedia.digital/healthing/wp-content/uploads/2021/02/GettyImages-1081891678-1-scaled.jpg?quality=90&strip=all&w=704&h=395",
     },
   ];
 
