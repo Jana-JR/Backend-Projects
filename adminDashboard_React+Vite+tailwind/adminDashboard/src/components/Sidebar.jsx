@@ -1,19 +1,15 @@
-import { NavLink } from "react-router-dom";
 import {
-  FaTachometerAlt,
-  FaUsers,
-  FaComments,
   FaChartLine,
-  FaCog,
+  FaTachometerAlt,
+  FaUsers
 } from "react-icons/fa";
+import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
   const menuItems = [
-    { name: "Dashboard", path: "/", icon: <FaTachometerAlt /> },
-    { name: "Products", path: "/products", icon: <FaChartLine /> },
-    { name: "Users", path: "/users", icon: <FaUsers /> },
-    { name: "Chat", path: "/chat", icon: <FaComments /> },
-    { name: "Settings", path: "/settings", icon: <FaCog /> },
+    { name: "Dashboard", path: "/admin/dashboard", icon: <FaTachometerAlt /> },
+    { name: "Products", path: "/admin/products", icon: <FaChartLine /> },
+    { name: "Orders", path: "/admin/orders", icon: <FaUsers /> },
   ];
 
   return (
