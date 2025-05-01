@@ -138,32 +138,32 @@ A full-stack eCommerce application built with the MERN stack (MongoDB, Express, 
 
 ## backend/.env =>>>
 
-# Database Connections
+[#Database Connections]
 MONGO_URL=mongodb://localhost:27017/APP_NAME
 REDIS_URL=redis://localhost:6379
 
-# Session Configuration
+[# Session Configuration]
 SESSION_SECRET=  
 COOKIE_DOMAIN=localhost
 COOKIE_EXPIRATION_DAYS=7
 
-# JWT Configuration
+[# JWT Configuration]
 JWT_ACCESS_SECRET= 
 JWT_REFRESH_SECRET= 
 ACCESS_TOKEN_EXP=15m  # Short-lived access token (15 minutes)
 REFRESH_TOKEN_EXP=7d   # Long-lived refresh token (7 days)
 
-# Application Settings
+[# Application Settings]
 PORT=
 PRODUCTION=true
 ORIGIN=
 CORS_ORIGIN=
 
-# Security Headers
+[# Security Headers]
 CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
 HSTS_MAX_AGE=63072000  # 2 years in seconds
 
-# Rate Limiting
+[# Rate Limiting]
 AUTH_RATE_LIMIT_WINDOW=15  # 15 minutes
 AUTH_RATE_LIMIT_MAX=5       # 5 attempts per window
 
