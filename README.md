@@ -183,3 +183,244 @@ npm run dev
 cd eCommerce_Frontend
 npm install
 npm run dev
+
+
+# MERN eCommerce API Documentation
+
+This Postman collection contains all API routes for the MERN eCommerce app, including authentication, address management, product handling, cart operations, brand management, and order processing.
+
+---
+
+## 🔐 Auth
+
+### `POST /auth/register`
+Creates a new user.
+
+**Request Body (JSON):**
+```json
+{
+  "name": "User Name",
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Returns:** User object with secure HTTP-only JWT cookie.
+
+---
+
+### `POST /auth/login`
+Logs in an existing user.
+
+**Request Body (JSON):**
+```json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+```
+
+**Returns:** User data with JWT cookie on success.
+
+---
+
+### `POST /auth/logout`
+Logs out the user by clearing the authentication cookie.
+
+**Returns:** Success message.
+
+---
+
+### `GET /auth/me`
+Returns details of the currently authenticated user.
+
+**Headers:** Requires HTTP-only cookie (JWT).
+
+---
+
+## 🧾 Address
+
+### `POST /address`
+Add a new address for the authenticated user.
+
+**Request Body (JSON):**
+```json
+{
+  "fullName": "User Name",
+  "mobile": "9876543210",
+  "street": "123 Main Street",
+  "city": "Metropolis",
+  "state": "CA",
+  "country": "USA",
+  "pinCode": "90210"
+}
+```
+
+---
+
+### `GET /address`
+Get all addresses for the current user.
+
+---
+
+### `PATCH /address/:id`
+Update a specific address.
+
+**Params:** `:id` = Address ObjectId
+
+---
+
+### `DELETE /address/:id`
+Delete a specific address.
+
+---
+
+## 🛍️ Product
+
+### `GET /product`
+Fetch products with optional filters.
+---
+
+### `GET /product/:id`
+Fetch a product by ID.
+
+---
+
+### `POST /product`
+Add a new product (**Admin only**).
+
+**Request Body (JSON):**
+```json
+{
+  "title": "Product Title",
+  "description": "Product Description",
+  "price": 100,
+  "discountPercentage": 10,
+  "brand": "brandId",
+  "stockQuantity": 50,
+  "thumbnail": "https://...",
+  "images": ["https://...", "https://..."]
+}
+```
+
+---
+
+### `PATCH /product/:id`
+Update a product (**Admin only**).
+
+---
+
+### `DELETE /product/:id`
+Delete a product (**Admin only**).
+
+---
+
+## 🧺 Cart
+
+### `GET /cart`
+Retrieve all items in the authenticated user's cart.
+
+---
+
+### `POST /cart`
+Add a product to cart.
+
+**Request Body (JSON):**
+```json
+{
+  "productId": "productId",
+  "quantity": 2
+}
+```
+
+---
+
+### `PATCH /cart/:productId`
+Update the quantity of a specific product in cart.
+
+**Request Body (JSON):**
+```json
+{
+  "quantity": 3
+}
+```
+
+---
+
+### `DELETE /cart/:productId`
+Remove a product from the cart.
+
+---
+
+## 🏷️ Brand
+
+### `GET /brand`
+Get all brands.
+
+---
+
+### `POST /brand`
+Add a new brand (**Admin only**).
+
+**Request Body (JSON):**
+```json
+{
+  "name": "Brand Name"
+}
+```
+
+---
+
+### `PATCH /brand/:id`
+Update a brand (**Admin only**).
+
+---
+
+### `DELETE /brand/:id`
+Delete a brand (**Admin only**).
+
+---
+
+## 📦 Order
+
+### `POST /order`
+Create an order from the current user's cart.
+
+**Request Body (JSON):**
+```json
+{
+  "addressId": "addressId",
+  "paymentMethod": "COD"
+}
+```
+
+---
+
+### `GET /order`
+Get all orders made by the current user.
+
+---
+
+### `GET /order/all`
+Get all orders (**Admin only**).
+
+---
+
+### `GET /order/:id`
+Get a specific order by ID.
+
+---
+
+### `PATCH /order/:id`
+Update an order (e.g., delivery status).
+
+**Request Body (JSON):**
+```json
+{
+  "delivery_status": "shipped"
+}
+```
+
+
+
+
