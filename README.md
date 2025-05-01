@@ -182,4 +182,4 @@ npm run dev
 ## Start the Frontend
 cd eCommerce_Frontend
 npm install
-npm start
+npm run dev
