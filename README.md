@@ -180,7 +180,7 @@ npm run dev
 
 
 ## Start the Frontend
-cd eCommerce_Frontend
+cd .\eCommerce-Frontend\adminDashboard\
 npm install
 npm run dev
 
