@@ -37,7 +37,7 @@ export default function Navbar() {
           <h1 className="text-3xl font-bold text-black">JR.</h1>
         </Link>
 
-        {/* Search + Buttons */}
+        {/* Search */}
         <div className="flex items-center space-x-4">
           <input
             type="text"

@@ -1,10 +1,17 @@
-import React, { Fragment, useState, useEffect } from "react";
-import Sidebar from "../../components/Sidebar";
-import Swal from "sweetalert2";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../Utils/axios";
-import { Box, InputLabel } from "@mui/material";
 import { toast } from "react-toastify";
+import Navbar from "../../components/Navbar";
+import Sidebar from "../../components/Sidebar";
+import {
+  Box,
+  Button,
+  Paper,
+  Typography,
+  TextField,
+  InputLabel,
+} from "@mui/material";
 
 export default function UpdateProduct() {
   const { id } = useParams();
@@ -18,8 +25,6 @@ export default function UpdateProduct() {
   const [brand, setBrand] = useState("");
   const [image, setImage] = useState("");
 
-
-
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -28,8 +33,8 @@ export default function UpdateProduct() {
         setDescription(data.description);
         setPrice(data.price);
         setStockQuantity(data.stockQuantity);
-        setBrand(data.brand?.name || ""); // Adjusting for brand reference
-        setImage(data.image || ""); // Assuming single image
+        setBrand(data.brand?.name || "");
+        setImage(data.image || "");
       } catch (err) {
         console.error("Failed to load product", err);
       }
@@ -62,7 +67,6 @@ export default function UpdateProduct() {
     }
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -77,7 +81,7 @@ export default function UpdateProduct() {
     }
 
     const payload = {
-      title: title,
+      title,
       description,
       price: parseFloat(price),
       discountPercentage: parseFloat(discountPercentage),
@@ -86,112 +90,87 @@ export default function UpdateProduct() {
       image,
     };
 
-    console.log("Payload to be sent:", payload);
-
     try {
       await axios.patch(`/products/${id}`, payload);
 
       toast.success("Product updated successfully");
       navigate("/admin/products");
     } catch (err) {
-      toast.error("Update failed")
+      toast.error("Update failed");
     }
   };
 
   return (
-    <div className="flex flex-col md:flex-row">
-      <div className="w-full md:w-1/5">
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div className="flex flex-1">
         <Sidebar />
-      </div>
-      <div className="w-full md:w-4/5 px-4">
-        <Fragment>
-          <div className="flex justify-center mt-10">
-            <form
-              onSubmit={handleSubmit}
-              className="shadow-lg p-6 rounded-lg bg-white w-full max-w-lg"
-              encType="multipart/form-data"
-            >
-              <h1 className="text-2xl font-semibold mb-4 text-center">
+        <Box component="main" className="flex-1 p-6 overflow-auto bg-gray-50">
+          <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5" fontWeight={600}>
                 Update Product
-              </h1>
-
-              <Input label="Title" value={title} onChange={setProductTitle} />
-              <Input label="Brand" value={brand} onChange={setBrand} />
-              <Input
-                label="Price"
-                type="number"
-                value={price}
-                onChange={setPrice}
-              />
-              <Input
-                label="Discount (%)"
-                type="number"
-                value={discountPercentage}
-                onChange={setDiscountPercentage}
-              />
-              <Textarea
-                label="Description"
-                value={description}
-                onChange={setDescription}
-              />
-              <Input
-                label="Stock Quantity"
-                type="number"
-                value={stockQuantity}
-                onChange={setStockQuantity}
-              />
-
-              <Box mb={3}>
-                <InputLabel>Upload Image</InputLabel>
-                <input type="file" onChange={handleSingleImageUpload} />
-              </Box>
-
-              <button
-                id="login_button"
-                type="submit"
-                className="w-full bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-400 transition duration-200 mt-4"
+              </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => navigate("/admin/products")}
               >
-                UPDATE
-              </button>
+                Back to List
+              </Button>
+            </Box>
+          </Paper>
 
-              <input
-                className="w-full bg-red-500 text-white mt-2 py-2 rounded-lg hover:bg-gray-400 transition duration-200"
-                type="reset"
-                value="Reset"
-              />
-            </form>
-          </div>
-        </Fragment>
+          <Paper elevation={2} sx={{ p: 4, maxWidth: "600px", mx: "auto" }} component="form" onSubmit={handleSubmit} encType="multipart/form-data">
+            <Input label="Title" value={title} onChange={setProductTitle} />
+            <Input label="Brand" value={brand} onChange={setBrand} />
+            <Input label="Price" type="number" value={price} onChange={setPrice} />
+            <Input label="Discount (%)" type="number" value={discountPercentage} onChange={setDiscountPercentage} />
+            <Textarea label="Description" value={description} onChange={setDescription} />
+            <Input label="Stock Quantity" type="number" value={stockQuantity} onChange={setStockQuantity} />
+
+            <Box mb={3}>
+              <InputLabel>Upload Image</InputLabel>
+              <input type="file" onChange={handleSingleImageUpload} />
+            </Box>
+
+            <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, mb: 1 }}>
+              UPDATE
+            </Button>
+            <Button type="reset" variant="outlined" color="error" fullWidth>
+              Reset
+            </Button>
+          </Paper>
+        </Box>
       </div>
     </div>
   );
 }
 
-// Reusable input components
+// Reusable Input and Textarea components
 const Input = ({ label, type = "text", value, onChange }) => (
-  <div className="mb-4">
-    <label className="block text-gray-700 font-medium">{label}</label>
-    <input
+  <Box mb={3}>
+    <TextField
+      fullWidth
+      label={label}
       type={type}
       value={value}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
       onChange={(e) =>
-        onChange(
-          type === "number" ? parseFloat(e.target.value) : e.target.value
-        )
+        onChange(type === "number" ? parseFloat(e.target.value) : e.target.value)
       }
     />
-  </div>
+  </Box>
 );
 
 const Textarea = ({ label, value, onChange }) => (
-  <div className="mb-4">
-    <label className="block text-gray-700 font-medium">{label}</label>
-    <textarea
-      rows="4"
+  <Box mb={3}>
+    <TextField
+      fullWidth
+      multiline
+      rows={4}
+      label={label}
       value={value}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
       onChange={(e) => onChange(e.target.value)}
-    ></textarea>
-  </div>
+    />
+  </Box>
 );

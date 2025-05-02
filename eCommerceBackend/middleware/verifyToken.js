@@ -1,43 +1,50 @@
-require('dotenv').config()
-const jwt=require('jsonwebtoken')
-const { sanitizeUser } = require('../utils/SanitizeUser')
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
+const redis = require('../config/redis'); // Ensure Redis connection
 
-exports.verifyToken=async(req,res,next)=>{
+exports.verifyToken = async (req, res, next) => {
     try {
-        // extract the token from request cookies
-        const {token}=req.cookies
-
-        // if token is not there, return 401 response
-        if(!token){
-            return res.status(401).json({message:"Token missing, please login again"})
-        }
-
-        // verifies the token 
-        const decodedInfo=jwt.verify(token,process.env.SECRET_KEY)
-
-        // checks if decoded info contains legit details, then set that info in req.user and calls next
-        if(decodedInfo && decodedInfo._id && decodedInfo.email){
-            req.user=decodedInfo
-            next()
-        }
-
-        // if token is invalid then sends the response accordingly
-        else{
-            return res.status(401).json({message:"Invalid Token, please login again"})
-        }
+        // Extract token from cookies or Authorization header
+        const token = req.cookies.accessToken || req.headers.authorization?.split(' ')[1];
         
+        if (!token) {
+            return res.status(401).json({ error: "Authorization token required" });
+        }
+
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
+        // Validate session in Redis
+        const validSession = await redis.sismemberAsync(
+            `user:${decoded.userId}:sessions`, 
+            decoded.sessionId
+        );
+
+        if (!validSession) {
+            return res.status(401).json({ error: "Session expired or invalid" });
+        }
+
+        // Attach user and session to request
+        req.user = {
+            userId: decoded.userId,
+            sessionId: decoded.sessionId
+        };
+
+        next();
     } catch (error) {
-
-        console.log(error);
+        console.error('JWT Verification Error:', error);
         
+        const response = {
+            error: "Authentication failed",
+            details: "Invalid or expired token"
+        };
+
         if (error instanceof jwt.TokenExpiredError) {
-            return res.status(401).json({ message: "Token expired, please login again" });
-        } 
-        else if (error instanceof jwt.JsonWebTokenError) {
-            return res.status(401).json({ message: "Invalid Token, please login again" });
-        } 
-        else {
-            return res.status(500).json({ message: "Internal Server Error" });
+            response.details = "Token expired";
+        } else if (error instanceof jwt.JsonWebTokenError) {
+            response.details = "Invalid token";
         }
+
+        res.status(401).json(response);
     }
-}
+};

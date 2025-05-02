@@ -14,13 +14,13 @@ exports.create = async (req, res) => {
     // Find brand by name (case-insensitive)
     let brand = await Brand.findOne({ name: new RegExp(`^${brandName.trim()}$`, "i") });
 
-    // If not found, create it
+   
     if (!brand) {
       brand = new Brand({ name: brandName.trim() });
       await brand.save();
     }
 
-    // Replace brand name with ObjectId
+   
     productData.brand = brand._id;
 
     const createdProduct = new Product(productData);

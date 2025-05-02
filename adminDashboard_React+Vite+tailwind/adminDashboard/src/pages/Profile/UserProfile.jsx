@@ -32,7 +32,7 @@ export default function UserProfile() {
       <div className="container mx-auto p-4">
 
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Desktop Sidebar */}
+          {/* Sidebar */}
             <div className="w-full md:w-1/4 sticky">
                 <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
             </div>

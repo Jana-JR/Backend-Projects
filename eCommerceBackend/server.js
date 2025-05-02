@@ -1,81 +1,163 @@
-require("dotenv").config()
-const express = require('express')
-const mongoose = require('mongoose')
+require("dotenv").config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
-const cors=require('cors')
-const morgan=require("morgan")
-const cookieParser=require("cookie-parser")
+const session = require("express-session");
+const { createClient } = require("redis");
+const { RedisStore } = require("connect-redis");
 
-//routes
-const authRoutes=require("./routes/Auth")
-const productRoutes=require("./routes/Product")
-const orderRoutes=require("./routes/Order")
-const cartRoutes=require("./routes/Cart")
-const brandRoutes=require("./routes/Brand")
-const userRoutes=require("./routes/User")
-const addressRoutes=require('./routes/Address')
-const uploadRoute = require("./routes/Upload");
-const { connectToDB } = require("./database/db")
-const User = require("./models/User")
-const bcrypt=require('bcryptjs');
+
 const path = require("path");
+const { connectToDB } = require("./database/db");
+const User = require("./models/User");
+const bcrypt = require('bcryptjs');
+
+// Server initialization
+const app = express();
 
 
-// server init
-const app=express()
 
-// database connection
-connectToDB()
+// Database connection
+connectToDB();
 
-async function createInitialAdmin() {
-    try {
-      const adminExists = await User.findOne({ isAdmin: true });
-      if (!adminExists) {
-        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
-        const admin = new User({
-          name: process.env.ADMIN_USERNAME,
-          email: process.env.ADMIN_EMAIL,
-          isAdmin: true,
-          password: hashedPassword,
-        });
-        await admin.save();
-        console.log('Initial admin user created');
-      }
-    } catch (error) {
-      console.error('Error creating initial admin user:', error);
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"]
     }
+  },
+  hsts: {
+    maxAge: 63072000,
+    includeSubDomains: true,
+    preload: true
   }
-  
-  createInitialAdmin();
+}));
 
-app.use("/assets/uploads", express.static(path.normalize(path.join(__dirname, "./assets/uploads"))));
-
-
-
-// middlewares
-app.use(express.urlencoded({extended: false}))
-app.use(cors({origin:process.env.ORIGIN,credentials:true,exposedHeaders:['X-Total-Count'],methods:['GET','POST','PATCH','DELETE']}))
-app.use(express.json())
-app.use(cookieParser())
-app.use(morgan("tiny"))
-
-// routeMiddleware
-app.use("/auth",authRoutes)
-app.use("/users",userRoutes)
-app.use("/products",productRoutes)
-app.use("/orders",orderRoutes)
-app.use("/cart",cartRoutes)
-app.use("/brands",brandRoutes)
-app.use("/address",addressRoutes)
-app.use("/upload", uploadRoute);
-
-app.get('/', (req, res) => {
-    res.send('NODE API is running')
-})
-
-mongoose.set("strictQuery", false)
-
-const port = process.env.PORT
-app.listen(port, ()=> {
-    console.log(`Node API app is running on port ${port}`)
+// Rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: 'Too many requests from this IP, please try again later'
 });
+
+// Create Redis client
+const redisClient = createClient({
+  url: process.env.REDIS_URL
+});
+
+
+// Session configuration
+app.use(
+  session({
+    store: new RedisStore({
+      client: redisClient,
+      prefix: "session:"
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.PRODUCTION === 'true',
+      httpOnly: true,
+      sameSite: process.env.PRODUCTION === 'true' ? 'none' : 'lax',
+      maxAge: parseInt(process.env.SESSION_MAX_AGE) || 86400000
+    }
+  })
+);
+
+// General middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(morgan("combined"));
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.ORIGIN,
+  credentials: true,
+  exposedHeaders: ['X-Total-Count', 'Set-Cookie'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
+}));
+
+// Static files
+app.use("/uploads", express.static(path.join(__dirname, "assets/uploads")));
+
+// Routes
+app.use("/auth", authLimiter, require("./routes/Auth"));
+app.use("/users", require("./routes/User"));
+app.use("/products", require("./routes/Product"));
+app.use("/orders", require("./routes/Order"));
+app.use("/cart", require("./routes/Cart"));
+app.use("/brands", require("./routes/Brand"));
+app.use("/address", require("./routes/Address"));
+app.use("/upload", require("./routes/Upload"));
+
+// Admin initialization
+async function createInitialAdmin() {
+  try {
+    const adminExists = await User.findOne({ isAdmin: true });
+    if (!adminExists && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+      await User.create({
+        name: process.env.ADMIN_USERNAME || 'Admin',
+        email: process.env.ADMIN_EMAIL,
+        isAdmin: true,
+        password: hashedPassword
+      });
+      console.log('Initial admin user created');
+    }
+  } catch (error) {
+    console.error('Admin creation error:', error.message);
+  }
+}
+
+createInitialAdmin();
+
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    // Test Redis connection
+    await redisClient.ping();
+    
+    res.json({
+      status: 'OK',
+      db: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+      redis: 'Connected'
+    });
+  } catch (err) {
+    res.json({
+      status: 'Degraded',
+      db: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+      redis: 'Disconnected'
+    });
+  }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(`[${new Date().toISOString()}] Error:`, err.stack);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+// Server startup
+const port = process.env.PORT || 5001;
+app.listen(port, () => {
+  console.log(`
+  Server running in ${process.env.NODE_ENV || 'development'} mode
+  Listening on port ${port}
+  Database: ${mongoose.connection.readyState === 1 ? 'Connected' : 'Connection failed'}
+  Redis: ${redisClient.connected ? 'Connected' : 'Connection failed'}
+  `);
+});
+

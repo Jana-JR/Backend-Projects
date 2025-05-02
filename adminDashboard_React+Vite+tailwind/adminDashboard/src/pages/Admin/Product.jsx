@@ -67,8 +67,16 @@ export default function ProductList() {
       flex: 1,
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Link to={`/admin/editproducts/${params.row._id}`}>
-            <Button variant="outlined" color="primary" size="small">
+          <Link 
+            to={`/admin/editproducts/${params.row._id}`} 
+            style={{ display: "inline-flex", textDecoration: "none" }}
+          >
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              size="small"
+              sx={{ minWidth: "36px", padding: "6px" }}
+            >
               <EditIcon fontSize="small" />
             </Button>
           </Link>
@@ -76,13 +84,15 @@ export default function ProductList() {
             variant="outlined"
             color="error"
             size="small"
+            sx={{ minWidth: "36px", padding: "6px" }}
             onClick={() => deleteProduct(params.row._id)}
           >
             <DeleteIcon fontSize="small" />
           </Button>
         </Box>
       ),
-    },
+    }
+    
     
   ];
  

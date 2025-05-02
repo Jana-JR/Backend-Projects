@@ -14,7 +14,7 @@ const ProductCard = ({ product, onAddToCart }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 text-center transition-transform transform hover:-translate-y-1 w-48 h-72 flex flex-col justify-between sm:w-56 sm:h-80 md:w-64 md:h-96">
+    <div className="bg-white rounded-lg shadow-xl/15 inset-ring p-4 text-center transition-transform transform hover:-translate-y-1 w-48 h-72 flex flex-col justify-between sm:w-56 sm:h-80 md:w-64 md:h-96">
       
       <img
         src={product.image}

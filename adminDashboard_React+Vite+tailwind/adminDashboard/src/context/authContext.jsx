@@ -1,20 +1,9 @@
-import { createContext, useReducer } from "react";
-
-const getUserFromStorage = () => {
-  try {
-    const user = localStorage.getItem("user");
-    if (user && user !== "undefined") {
-      return JSON.parse(user);
-    }
-    return null;
-  } catch (err) {
-    return null;
-  }
-};
+import { createContext, useReducer, useEffect } from "react";
+import axios from "../Utils/axios";
 
 const INITIAL_STATE = {
-  user: getUserFromStorage(),
-  loading: false,
+  user: null,
+  loading: true,  // Start with loading=true (because we're checking if user is logged in)
   error: null,
 };
 
@@ -24,12 +13,11 @@ const AuthReducer = (state, action) => {
   switch (action.type) {
     case "LOGIN_START":
       return {
-        user: null,
+        ...state,
         loading: true,
         error: null,
       };
     case "LOGIN_SUCCESS":
-      localStorage.setItem("user", JSON.stringify(action.payload)); 
       return {
         user: action.payload,
         loading: false,
@@ -42,7 +30,6 @@ const AuthReducer = (state, action) => {
         error: action.payload,
       };
     case "LOGOUT":
-      localStorage.removeItem("user");
       return {
         user: null,
         loading: false,
@@ -55,6 +42,20 @@ const AuthReducer = (state, action) => {
 
 export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      dispatch({ type: "LOGIN_START" });
+      try {
+        const res = await axios.get("/auth/check-auth", { withCredentials: true });
+        dispatch({ type: "LOGIN_SUCCESS", payload: res.data });
+      } catch (err) {
+        dispatch({ type: "LOGIN_FAILURE", payload: err.response?.data?.message || "Authentication failed" });
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
     <AuthContext.Provider

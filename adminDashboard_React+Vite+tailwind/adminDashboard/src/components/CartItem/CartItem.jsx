@@ -14,7 +14,7 @@ export const CartItem = ({
     unit,
     stock,
     productId,
-    description, // Added description prop
+    description, 
     onRemove,
     onUpdate,
 }) => {
@@ -46,7 +46,7 @@ export const CartItem = ({
         unit,
         stock,
         productId,
-        description // Log description to check if it's passed properly
+        description 
     });
 
     return (

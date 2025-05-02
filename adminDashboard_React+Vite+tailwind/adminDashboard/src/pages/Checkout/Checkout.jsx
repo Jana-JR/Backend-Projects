@@ -3,7 +3,7 @@ import Navbar from "../../components/Navbar";
 import { AuthContext } from "../../context/authContext";
 import axios from "../../Utils/axios";
 import { Button, Card, CardContent, Typography } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";  // Added useLocation
+import { useNavigate, useLocation } from "react-router-dom";  
 import { toast } from "react-toastify";
 
 const Checkout = () => {
@@ -14,8 +14,8 @@ const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
   
   const navigate = useNavigate();
-  const location = useLocation();  // Added
-  const buyNowProduct = location.state?.product;  // Get product passed from BuyNow
+  const location = useLocation();  
+  const buyNowProduct = location.state?.product; 
   const buyNowQuantity = location.state?.quantity || 1;
 
   useEffect(() => {

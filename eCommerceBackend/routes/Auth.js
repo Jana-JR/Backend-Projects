@@ -6,7 +6,8 @@ const { verifyToken } = require('../middleware/VerifyToken')
 router
     .post("/signup",authController.signup)
     .post('/login',authController.login)
-    .get('/logout',authController.logout)
+    .get('/logout',verifyToken,authController.logout)
+    .get("/check-auth",verifyToken,authController.checkAuth)
 
 
 module.exports=router
