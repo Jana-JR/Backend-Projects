@@ -1,4 +1,4 @@
-import { createContext, useReducer, useEffect, useCallback } from "react";
+import { createContext, useReducer, useEffect, useCallback, useState } from "react";
 import axios from "../Utils/axios";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -19,7 +19,7 @@ const AuthReducer = (state, action) => {
     case "LOGIN_FAILURE":
       return { user: null, loading: false, error: action.payload };
     case "LOGOUT":
-      return { ...INITIAL_STATE, loading: false };
+      return { user: null, loading: false, error: null };
     case "CLEAR_ERROR":
       return { ...state, error: null };
     default:
@@ -31,48 +31,62 @@ export const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
   const navigate = useNavigate();
   const location = useLocation();
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
+
+  const normalizeUser = (data) => {
+    if (data.user) return data.user;
+    return {
+      _id: data.userId,
+      email: '',
+      isAdmin: data.isAdmin
+    };
+  };
 
   const fetchUser = useCallback(async () => {
     dispatch({ type: "LOGIN_START" });
 
     try {
-      const { data } = await axios.get("/auth/check-auth", { withCredentials: true });
+      const res = await axios.get("/auth/check-auth", {
+        withCredentials: true,
+        timeout: 5000
+      });
 
-      const user = data.user || {
-        _id: data.userId,
-        email: "",
-        isAdmin: data.isAdmin,
-      };
+      const normalizedUser = normalizeUser(res.data);
 
-      if (!user._id) throw new Error("User ID missing");
+      if (normalizedUser._id) {
+        if (res.data.accessToken) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.accessToken}`;
+        }
 
-      if (data.accessToken) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${data.accessToken}`;
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: normalizedUser,
+        });
+      } else {
+        throw new Error("User ID missing in response");
       }
-
-      dispatch({ type: "LOGIN_SUCCESS", payload: user });
     } catch (err) {
-      const status = err.response?.status;
-
-      if (status === 401) {
+      if (err.response?.status === 401) {
         dispatch({ type: "LOGOUT" });
-      } else if (status === 429) {
+      } else if (err.response?.status === 429) {
         dispatch({
           type: "LOGIN_FAILURE",
           payload: {
             code: "RATE_LIMITED",
-            message: "Too many requests. Please wait.",
-          },
+            message: "Too many requests. Please wait before trying again."
+          }
         });
       } else {
         dispatch({
           type: "LOGIN_FAILURE",
           payload: {
             code: "NETWORK_ERROR",
-            message: "Cannot connect to auth service.",
-          },
+            message: "Cannot connect to authentication service"
+          }
         });
       }
+    } finally {
+      setInitialCheckDone(true); // Important: indicate that we're done checking
     }
   }, []);
 
@@ -80,32 +94,41 @@ export const AuthContextProvider = ({ children }) => {
     fetchUser();
   }, [fetchUser]);
 
+  // Delay navigation until auth status is confirmed
   useEffect(() => {
-    if (state.loading) return;
+    if (!initialCheckDone) return;
 
-    const path = location.pathname;
-    const onLoginPage = path === "/login";
-
-    if (!state.user && !onLoginPage) {
-      sessionStorage.setItem("redirectAfterLogin", path);
+    if (!state.user && location.pathname !== "/login") {
+      const currentPath = location.pathname;
+      sessionStorage.setItem("redirectAfterLogin", currentPath);
       navigate("/login", { replace: true });
     }
 
-    if (state.user && onLoginPage) {
+    if (state.user && location.pathname === "/login") {
       const redirectTo = sessionStorage.getItem("redirectAfterLogin") || "/";
       sessionStorage.removeItem("redirectAfterLogin");
       navigate(redirectTo, { replace: true });
     }
-  }, [state.loading, state.user, location.pathname, navigate]);
+  }, [initialCheckDone, state.user, location, navigate]);
 
   useEffect(() => {
-    if (!state.error) return;
-    const timer = setTimeout(() => dispatch({ type: "CLEAR_ERROR" }), 100);
-    return () => clearTimeout(timer);
+    if (state.error) {
+      const timer = setTimeout(() => {
+        dispatch({ type: "CLEAR_ERROR" });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
   }, [state.error]);
 
   return (
-    <AuthContext.Provider value={{ ...state, dispatch }}>
+    <AuthContext.Provider
+      value={{
+        user: state.user,
+        loading: state.loading,
+        error: state.error,
+        dispatch,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

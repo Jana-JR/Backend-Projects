@@ -29,15 +29,19 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"]
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "http://localhost:5001", "data:"],  // ✅ allow image loading from backend
+      mediaSrc: ["'self'", "http://localhost:5001"],          // optional: for video/audio
     }
   },
+  crossOriginResourcePolicy: { policy: "cross-origin" },       // ✅ allow cross-origin resource loading
   hsts: {
     maxAge: 63072000,
     includeSubDomains: true,
     preload: true
   }
 }));
+
 
 // Rate limiting for auth endpoints
 const authLimiter = rateLimit({
@@ -67,8 +71,10 @@ app.use(cors({
   methods: ['GET', 'POST', 'PATCH', 'DELETE', ]
 }));
 
+
+
 // Static files
-app.use("/uploads", express.static(path.join(__dirname, "assets/uploads")));
+app.use("/assets/uploads", express.static(path.join(__dirname, "assets/uploads")));
 
 // Routes
 app.use("/auth", authLimiter, require("./routes/Auth"));
