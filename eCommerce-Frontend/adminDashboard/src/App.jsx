@@ -2,11 +2,7 @@ import React from "react";
 import RouteLayout from "./Routes/RouteLayout";
 
 function App() {
-
-
-  return (
-    <RouteLayout/>
-  );
+  return <RouteLayout />;
 }
 
 export default App;

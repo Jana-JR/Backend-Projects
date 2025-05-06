@@ -7,9 +7,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 
-const session = require("express-session");
 const { createClient } = require("redis");
-const { RedisStore } = require("connect-redis");
 
 
 const path = require("path");
@@ -44,7 +42,7 @@ app.use(helmet({
 // Rate limiting for auth endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10,
+  max: 100,
   message: 'Too many requests from this IP, please try again later'
 });
 
@@ -54,24 +52,6 @@ const redisClient = createClient({
 });
 
 
-// Session configuration
-app.use(
-  session({
-    store: new RedisStore({
-      client: redisClient,
-      prefix: "session:"
-    }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.PRODUCTION === 'true',
-      httpOnly: true,
-      sameSite: process.env.PRODUCTION === 'true' ? 'none' : 'lax',
-      maxAge: parseInt(process.env.SESSION_MAX_AGE) || 86400000
-    }
-  })
-);
 
 // General middleware
 app.use(express.json());
@@ -84,7 +64,7 @@ app.use(cors({
   origin: process.env.ORIGIN,
   credentials: true,
   exposedHeaders: ['X-Total-Count', 'Set-Cookie'],
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', ]
 }));
 
 // Static files

@@ -11,6 +11,7 @@ export default function Navbar() {
   const { user, dispatch } = useContext(AuthContext);
 
   const { data: userData } = useFetch(user ? `/users/${user._id}` : null);
+ 
 
   const handleProfile = () => {
     if (!user) return;

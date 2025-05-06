@@ -22,7 +22,7 @@ const Products = () => {
         {
           user: user._id, 
           product: product._id, 
-          unit: 1,
+          quantity: 1,
         },
       
         { withCredentials: true }

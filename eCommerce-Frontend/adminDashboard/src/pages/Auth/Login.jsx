@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import axios from "../../Utils/axios";
 import { toast } from "react-toastify";
+import { useEffect } from "react";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -13,6 +14,10 @@ const Login = () => {
   const { loading, error, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    dispatch({ type: "LOGIN_FAILURE", payload: null });
+  }, [dispatch]);
+
   const handleChange = (e) => {
     setCredentials((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
@@ -22,26 +27,25 @@ const Login = () => {
     dispatch({ type: "LOGIN_START" });
 
     try {
-      const res = await axios.post("/auth/login", credentials);
-
+      const res = await axios.post("/auth/login", credentials, {
+        withCredentials: true,
+      });
       const user = res.data;
-      console.log("User:", user);
 
       dispatch({ type: "LOGIN_SUCCESS", payload: user });
       toast.success("Login Success");
-      
 
       if (user.isAdmin) {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
-      
     } catch (err) {
-      dispatch({ type: "LOGIN_FAILURE", payload: err.response.data });
+      const errorMessage = err.response?.data?.message || "Login failed";
+      dispatch({ type: "LOGIN_FAILURE", payload: { message: errorMessage } });
+      toast.error(errorMessage);
     }
   };
-
   return (
     <div className="bg-[#F5F5F5]">
       <div className="py-32 lg:py-32">
@@ -102,7 +106,9 @@ const Login = () => {
                 </p>
 
                 {error && (
-                  <p className="mt-4 text-red-500 font-medium">{error.message || "Login failed"}</p>
+                  <p className="mt-4 text-red-500 font-medium">
+                    {error.message || "Login failed"}
+                  </p>
                 )}
               </div>
             </div>

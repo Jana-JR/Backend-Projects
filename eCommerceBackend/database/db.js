@@ -7,5 +7,6 @@ exports.connectToDB=async()=>{
         console.log('connected to DB');
     } catch (error) {
         console.log(error);
+        console.log('DB connection failed');
     }
 }

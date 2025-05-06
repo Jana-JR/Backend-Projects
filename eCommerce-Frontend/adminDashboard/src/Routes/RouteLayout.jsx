@@ -24,21 +24,22 @@ import Forbidden403 from "../pages/ErrorPages/Forbidden403";
 
 export default function RouteLayout() {
 
-     const { user } = useContext(AuthContext);
-    
-      
-      const Protected = ({ children, adminOnly = false }) => {
-        if (!user) {
-          return <Navigate to="/login" />;
-        }
-    
-       
-        if (adminOnly && !user.isAdmin) {
-          return <Forbidden403 />;
-        }
-    
-        return children;
-      };
+    const { user, loading } = useContext(AuthContext);
+
+const Protected = ({ children, adminOnly = false }) => {
+  if (loading) return null; 
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (adminOnly && !user.isAdmin) {
+    return <Forbidden403 />;
+  }
+
+  return children;
+};
+
  
 
   return (

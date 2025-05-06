@@ -74,7 +74,7 @@ const OrderHistory = () => {
                               <strong>Brand:</strong> {product.brand?.name}{" "}
                               <br />
                               <strong>Qty:</strong> {prod.quantity} <br />
-                              <strong>Price per unit:</strong> LKR.{" "}
+                              <strong>Price per quantity:</strong> LKR.{" "}
                               {parseFloat(product.price).toFixed(2)} <br />
                             </div>
                           ) : (

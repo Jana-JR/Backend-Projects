@@ -11,7 +11,7 @@ export const CartItem = ({
     category,
     brand,
     price,
-    unit,
+    quantity,
     stock,
     productId,
     description, 
@@ -23,16 +23,16 @@ export const CartItem = ({
     const currencyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'LKR' });
 
     const handleAddQty = () => {
-        if (unit < stock) {
-            onUpdate?.(id, { unit: unit + 1 });
+        if (quantity < stock) {
+            onUpdate?.(id, { quantity: quantity + 1 });
         }
     };
 
     const handleRemoveQty = () => {
-        if (unit === 1) {
+        if (quantity === 1) {
             onRemove?.(id);
         } else {
-            onUpdate?.(id, { unit: unit - 1 });
+            onUpdate?.(id, { quantity: quantity - 1 });
         }
     };
 
@@ -43,7 +43,7 @@ export const CartItem = ({
         category,
         brand,
         price,
-        unit,
+        quantity,
         stock,
         productId,
         description 
@@ -73,13 +73,13 @@ export const CartItem = ({
                     <IconButton onClick={handleRemoveQty}>
                         <RemoveIcon fontSize='small' />
                     </IconButton>
-                    <Typography>{unit}</Typography>
-                    <IconButton onClick={handleAddQty} disabled={unit === stock}>
+                    <Typography>{quantity}</Typography>
+                    <IconButton onClick={handleAddQty} disabled={quantity === stock}>
                         <AddIcon fontSize='small' />
                     </IconButton>
                 </Stack>
 
-                {stock - unit <= 2 && (
+                {stock - quantity <= 2 && (
                     <Chip label='Low stock' size='small' color='warning' variant='outlined' />
                 )}
             </Stack>
@@ -87,7 +87,7 @@ export const CartItem = ({
             {/* Price and Remove Button */}
             <Stack alignItems={isMobile ? 'flex-start' : 'flex-end'} spacing={1}>
                 <Typography variant='body2' fontWeight={600}>
-                    {currencyFormat.format(price * unit)}
+                    {currencyFormat.format(price * quantity)}
                 </Typography>
                 <Button variant='outlined' color='error' size='small' onClick={() => onRemove?.(id)}>Remove</Button>
             </Stack>
